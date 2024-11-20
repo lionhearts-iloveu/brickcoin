@@ -19,8 +19,7 @@
   "content_scripts": [
   {
     "matches": ["https://www.bricklink.com/v2/globalcart*", "https://*.lego.com/*"],
-    "js": ["content.js"],
-    "css": ["style.css"]
+    "js": ["content.js"]
   }
 ],
 "options_ui": {

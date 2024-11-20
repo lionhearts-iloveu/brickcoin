@@ -18,12 +18,12 @@ table {
     border: 1px solid #ddd;
     line-height: 1.6; /* Increased line height for better spacing */
   }
-  th:nth-child(1), td:nth-child(1) { width: 25%; } /* Lego Type */
+  th:nth-child(1), td:nth-child(1) { width: 20%; } /* Lego Type */
   th:nth-child(2), td:nth-child(2) { width: 15%; } /* Save Up To */
-  th:nth-child(3), td:nth-child(3) { width: 10%; } /* Add to PAB */
-  th:nth-child(4), td:nth-child(4) { width: 10%; } /* Remove from Cart */
+  th:nth-child(3), td:nth-child(3) { width: 15%; } /* Add to PAB */
+  th:nth-child(4), td:nth-child(4) { width: 15%; } /* Remove from Cart */
   th:nth-child(5), td:nth-child(5) { width: 15%; } /* Add to PAB */
-  th:nth-child(6), td:nth-child(6) { width: 25%; } /* Remove from Cart */
+  th:nth-child(6), td:nth-child(6) { width: 20%; } /* Remove from Cart */
   .highlight_green {
     font-weight: bold;
     color: green;
@@ -85,7 +85,7 @@ function updateData(sellerData) {
                 </tr>`;
 
             // Helper function to create each row
-            const createRow = (type, bricklinkPrice, legoPrice, save, items, cartType, suffix) => {
+            const createRow = (type, bricklinkPrice, legoPrice, save, items,  legoCurrency, cartCurrency, cartType, suffix) => {
                 const row = document.createElement('tr');
 
                 const createCell = (content, className) => {
@@ -101,19 +101,19 @@ function updateData(sellerData) {
                 const bricklinkCell = document.createElement('td');
                 const bricklinkSpan = document.createElement('span');
                 bricklinkSpan.className = bricklinkPrice > legoPrice ? 'highlight_red' : 'highlight_green';
-                bricklinkSpan.textContent = `€${bricklinkPrice.toFixed(2)}`;
+                bricklinkSpan.textContent = `${cartCurrency} ${bricklinkPrice.toFixed(2)}`;
                 bricklinkCell.appendChild(bricklinkSpan);
 
                 const legoCell = document.createElement('td');
                 const legoSpan = document.createElement('span');
                 legoSpan.className = bricklinkPrice > legoPrice ? 'highlight_green' : 'highlight_red';
-                legoSpan.textContent = `€${legoPrice.toFixed(2)}`;
+                legoSpan.textContent = `${legoCurrency} ${legoPrice.toFixed(2)}`;
                 legoCell.appendChild(legoSpan);
 
                 const saveCell = document.createElement('td');
                 const saveSpan = document.createElement('span');
                 saveSpan.className = bricklinkPrice > legoPrice ? 'highlight_green' : 'highlight_red';
-                saveSpan.textContent = `€${save.toFixed(2)}`;
+                saveSpan.textContent = `${legoCurrency.toUpperCase() == cartCurrency.toUpperCase() ? legoCurrency : 'ERROR'} ${save.toFixed(2)}`;
                 saveCell.appendChild(saveSpan);
 
                 // Add button cells with conditions
@@ -165,6 +165,8 @@ function updateData(sellerData) {
                     sellerData.comparison.bap.total_lego,
                     sellerData.comparison.bap.totalSave,
                     sellerData.comparison.bap.listOfItems,
+                    sellerData.comparison.legoCurrency,
+                    sellerData.comparison.cartCurrency,
                     'bap',
                     'standard'
                 ));
@@ -176,6 +178,8 @@ function updateData(sellerData) {
                     sellerData.comparison.pab.total_lego,
                     sellerData.comparison.pab.totalSave,
                     sellerData.comparison.pab.listOfItems,
+                    sellerData.comparison.legoCurrency,
+                    sellerData.comparison.cartCurrency,
                     'pab',
                     'bestseller'
                 ));
@@ -187,6 +191,8 @@ function updateData(sellerData) {
                     sellerData.comparison.bap_bricklink.total_lego,
                     sellerData.comparison.bap_bricklink.totalSave,
                     sellerData.comparison.bap_bricklink.listOfItems,
+                    sellerData.comparison.legoCurrency,
+                    sellerData.comparison.cartCurrency,
                     'bap',
                     'bricklink-standard'
                 ));
@@ -198,6 +204,8 @@ function updateData(sellerData) {
                     sellerData.comparison.pab_bricklink.total_lego,
                     sellerData.comparison.pab_bricklink.totalSave,
                     sellerData.comparison.pab_bricklink.listOfItems,
+                    sellerData.comparison.legoCurrency,
+                    sellerData.comparison.cartCurrency,
                     'pab',
                     'bricklink-bestseller'
                 ));
@@ -209,7 +217,7 @@ function updateData(sellerData) {
                 row.appendChild(bricklinkCell);
                 const totalBricklinkCell = document.createElement('td');
                 const totalBricklinkSpan = document.createElement('span');
-                totalBricklinkSpan.textContent = `€${sellerData.comparison.bricklink.total_bricklink.toFixed(2)}`;
+                totalBricklinkSpan.textContent = `${sellerData.comparison.cartCurrency} ${sellerData.comparison.bricklink.total_bricklink.toFixed(2)}`;
                 totalBricklinkCell.appendChild(totalBricklinkSpan);
                 row.appendChild(totalBricklinkCell);
 

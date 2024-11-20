@@ -62,7 +62,7 @@ async function fetchCartData(sids) {
 
       if (response.ok) {
         const data = await response.json();
-        const items = extractCartItems(data.cart.items);
+        const items = extractCartItems(data.cart.items, data.cart.viewCurrency.trim());
         
         const itemNos = items.map((item) => item.itemLego).join(" ");
 
@@ -97,16 +97,21 @@ async function fetchCartData(sids) {
 function compareBricklinkAndPAB(items, allExtractedItems) {
   comparison = {'pab': {'totalSave': 0, 'listOfItems': [], 'total_bricklink': 0, 'total_lego': 0}, 'bap': {'totalSave': 0, 'listOfItems': [], 'total_bricklink': 0, 'total_lego': 0}, 
                 'pab_bricklink': {'totalSave': 0, 'listOfItems': [], 'total_bricklink': 0, 'total_lego': 0},  'bap_bricklink': {'totalSave': 0, 'listOfItems': [], 'total_bricklink': 0, 'total_lego': 0},
-                'bricklink': {'listOfItems': [], 'total_bricklink': 0}}
+                'bricklink': {'listOfItems': [], 'total_bricklink': 0}, 'legoCurrency': null, 'cartCurrency': null}
   console.log(items)
   for (let item of items) {
-    console.log('0 ITEM', item.itemNo, item.colorID)
+    console.log(item);
     if (item.itemNo in bricklinkToLegoIds){
       is_ok = false;
       for (let legoId of bricklinkToLegoIds[item.itemNo]) {
         if (legoId in allExtractedItems && item.colorID in  allExtractedItems[legoId]){
-          console.log('1 ITEM', item.itemNo, item.colorID)
           legoItem = allExtractedItems[legoId][item.colorID]
+          if (comparison.legoCurrency == null) {
+            comparison.legoCurrency = legoItem.legoCurrency
+          }
+          else if (comparison.legoCurrency != legoItem.legoCurrency) {
+            comparison.legoCurrency = 'ERROR'
+          }
           if (item.unitPrice >= (legoItem.price / 100)) {
             comparison[legoItem.cartType].totalSave += (item.unitPrice - (legoItem.price / 100)) * item.cartQty
             comparison[legoItem.cartType].listOfItems.push({'sku': legoItem.sku, 'quantity': item.cartQty, 'invID': item.invID})
@@ -123,7 +128,6 @@ function compareBricklinkAndPAB(items, allExtractedItems) {
         }
       } 
       if(!is_ok) {
-        console.log('2 ITEM', item.itemNo, item.colorID)
         comparison.bricklink.listOfItems.push({'quantity': item.cartQty, 'invID': item.invID})
         comparison.bricklink.total_bricklink += item.unitPrice * item.cartQty
       }
@@ -132,6 +136,12 @@ function compareBricklinkAndPAB(items, allExtractedItems) {
       console.log('3 ITEM', item.itemNo, item.colorID)
       comparison.bricklink.listOfItems.push({'quantity': item.cartQty, 'invID': item.invID})
       comparison.bricklink.total_bricklink += item.unitPrice * item.cartQty
+    }
+    if (comparison.cartCurrency == null) {
+      comparison.cartCurrency = item.cartCurrency;
+    }
+    else if (comparison.cartCurrency != item.cartCurrency) {
+      comparison.cartCurrency = 'ERROR';
     }
     
   }
@@ -171,7 +181,7 @@ function createCartHeaders(sid) {
   };
 }
 
-function extractCartItems(cartItems) {
+function extractCartItems(cartItems, currency) {
   console.log('extractCartItems')
   return cartItems.map((item) => ({
     itemNo: item.itemNo,
@@ -179,7 +189,9 @@ function extractCartItems(cartItems) {
     colorID: item.colorID,
     colorName: item.colorName,
     cartQty: item.cartQty,
-    totalNativeSalePriceRaw: parseFloat(item.totalSalePrice.replace(/[^\d\.]*/g, '')),
+    cartCurrency: currency,
+    // totalNativeSalePriceRaw: parseFloat(item.totalSalePrice.replace(/[^\d\.]*/g, '')),
+    totalNativeSalePriceRaw: item.totalNativeSalePriceRaw,
     unitPrice: parseFloat(item.totalSalePrice	.replace(/[^\d\.]*/g, '')) / item.cartQty,
     invID: item.invID
   }));
@@ -239,10 +251,12 @@ function processLegoItems(items, allExtractedItems) {
     const colorKey = facets.color.key;
     const colorName = facets.color.name;
     const centAmount = price.centAmount;
+    const currencyCode = price.currencyCode;
 
     if (!allExtractedItems[designId]) allExtractedItems[designId] = {};
     allExtractedItems[designId][legoToBricklinkColors[colorKey]] = {
       price: centAmount,
+      legoCurrency: currencyCode,
       colorName,
       legoColorKey: colorKey,
       sku,
