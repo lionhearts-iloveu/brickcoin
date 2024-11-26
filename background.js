@@ -2,8 +2,6 @@ let legoToBricklinkColors = {};
 let bricklinkToLegoIds = {};
 let legoToBricklinkId = {};
 
-let country = 'lu'
-let language = 'en'
 let legoAutho = null
 
 // chrome.chromeAction.onClicked.addListener(() => {
@@ -13,10 +11,45 @@ let legoAutho = null
 // });
 
 async function getLegoConfig() {
-  return await chrome.storage.sync.get(["language", "country"]).then((items) => {
-    return `${items.language}-${items.country.toUpperCase()}`
+  return await chrome.storage.sync.get(["language_code", "country_code"]).then((items) => {
+    console.log(items);
+    return `${items.language_code}-${items.country_code}`
   });
 }
+
+async function getLegoConfig() {
+  const items = await chrome.storage.sync.get(["language_code", "country_code"]);
+
+  if (!items.language_code || !items.country_code) {
+    // Open the options.html page in a new window
+    const popup = await chrome.windows.create({
+      url: chrome.runtime.getURL("options.html"),
+      type: "popup"
+    });
+
+    // Wait for the popup window to close
+    await new Promise((resolve) => {
+      const listener = (windowId) => {
+        if (windowId === popup.id) {
+          chrome.windows.onRemoved.removeListener(listener);
+          resolve();
+        }
+      };
+      chrome.windows.onRemoved.addListener(listener);
+    });
+
+    // Re-fetch the data after the popup is closed
+    const updatedItems = await chrome.storage.sync.get(["language_code", "country_code"]);
+    if (!updatedItems.language_code || !updatedItems.country_code) {
+      throw new Error("User did not provide the necessary configuration.");
+    }
+    return `${updatedItems.language_code}-${updatedItems.country_code}`;
+  }
+
+  // If everything exists, return the configuration
+  return `${items.language_code}-${items.country_code}`;
+}
+
 
 async function loadColorMappings() {
   try {
@@ -296,8 +329,7 @@ async function handleCheckoutRequest(details) {
   }
 }
 
-loadColorMappings();
-loadIdsMappings();
+
 chrome.webRequest.onBeforeRequest.addListener(
   handleCheckoutRequest,
   {
@@ -432,3 +464,6 @@ chrome.runtime.onMessage.addListener(async function(request, sender, sendRespons
     openPickABrick()
   }
 });
+
+loadColorMappings();
+loadIdsMappings();

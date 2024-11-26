@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BrickCoin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Compare Bricklink to Lego Pick a Brick, Save up to 80%",
   "host_permissions": ["https://*.lego.com/*", "https://www.bricklink.com/v2/globalcart*"],
     "permissions": [
@@ -35,5 +35,8 @@
   "48": "icons/48.png",
   "96": "icons/96.png",
   "128": "icons/128.png"
-}
+},
+"action": {
+   "default_popup": "options.html"
+ }
 }
