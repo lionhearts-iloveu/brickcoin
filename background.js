@@ -245,7 +245,7 @@ async function fetchLegoData(locale, itemNos, page = 1, allExtractedItems = {}) 
     if (data && data.data && data.data.searchElements) {
       processLegoItems(data.data.searchElements.results, allExtractedItems);
 
-      if (data.data.searchElements.count < data.data.searchElements.total) {
+      if (data.data.searchElements.count < data.data.searchElements.total && data.data.searchElements.count > 0) {
         await fetchLegoData(locale, itemNos, page + 1, allExtractedItems);
       }
     }
